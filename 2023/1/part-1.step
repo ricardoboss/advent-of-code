@@ -1,0 +1,37 @@
+list digits = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+
+string input = fileRead("input.txt")
+list lines = split(input, "\n")
+number len = length(input)
+
+number sum = 0
+number i = 0
+number lower
+number upper
+string char
+number lineLength
+foreach (string line in lines) {
+	lineLength = length(line)
+
+	char = line[i]
+	while (!contains(digits, char)) {
+		i++
+		char = line[i]
+	}
+
+	upper = toNumber(char)
+
+	i = lineLength - 1
+	char = line[i]
+	while (!contains(digits, char)) {
+		i--
+		char = line[i]
+	}
+
+	lower = toNumber(char)
+	sum += 10 * upper + lower
+
+	i = 0
+}
+
+println(sum)
