@@ -1,51 +1,71 @@
-list digits = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+list literalDigits = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
 list namedDigits = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
 list namedDigitsStarters = ["z", "o", "t", "f", "s", "e", "n"]
 
-string input = fileRead("example2.txt")
-list lines = split(input, "\n")
-number len = length(input)
-
-function firstDigit = (string line) {
+function firstLiteralOrNamedDigit = (string line) {
 	number i = 0
 	number max = length(line)
-	string char = line[i]
-	while (!contains(digits, char)) {
-		i++
-		if (i >= max) {
-			return null
+
+	number? literal
+	number? named
+
+	while (i < max) {
+		literal = literalDigitAt(line, i)
+		if (literal != null) {
+			return literal
 		}
 
-		char = line[i]
+		named = namedDigitAt(line, i)
+		if (named != null) {
+			return named
+		}
+
+		i++
 	}
 
-	return toNumber(char)
+	return null
 }
-
-function lastDigit = (string line) {
+function lastLiteralOrNamedDigit = (string line) {
 	number i = length(line) - 1
-	string char = line[i]
-	while (!contains(digits, char)) {
-		i--
-		if (i < 0) {
-			return null
+
+	number? literal
+	number? named
+
+	while (i >= 0) {
+		literal = literalDigitAt(line, i)
+		if (literal != null) {
+			return literal
 		}
 
-		char = line[i]
+		named = namedDigitAt(line, i)
+		if (named != null) {
+			return named
+		}
+
+		i--
+	}
+
+	return null
+}
+
+function literalDigitAt = (string line, number index) {
+	string char = line[index]
+
+	if (!contains(literalDigits, char)) {
+		return null
 	}
 
 	return toNumber(char)
 }
 
-function firstNamedDigit = (string line) {
-	number i = 0
-	while (!contains(namedDigitsStarters, line[i])) {
-		i++
+function namedDigitAt = (string line, number index) {
+	if (!contains(namedDigitsStarters, line[index])) {
+		return null
 	}
 
 	string word = ""
 	foreach (number idx: string namedDigit in namedDigits) {
-		word = substring(line, i, i + length(namedDigit))
+		word = substring(line, i, length(namedDigit))
 
 		if (word == namedDigit) {
 			return idx
@@ -55,45 +75,17 @@ function firstNamedDigit = (string line) {
 	return null
 }
 
-function lastNamedDigit = (string line) {
-	number i = length(line) - 1
-
-	while (i > 0) {
-		while (!contains(namedDigitsStarters, line[i])) {
-			i--
-		}
-
-		string word
-		number wordLength
-		number wordStart = i
-		foreach (number idx: string namedDigit in namedDigits) {
-			wordLength = length(namedDigit)
-			wordStart = i - wordLength + 1
-			word = substring(line, wordStart, i + 1)
-
-			if (word == namedDigit) {
-				return idx
-			}
-		}
-
-		i--
-	}
-
-	return null
-}
+string input = fileRead("example2.txt")
+list lines = split(input, "\n")
+number len = length(input)
 
 number sum = 0
 number lower
 number upper
 foreach (string line in lines) {
-	println(line)
-	println("first digit: ", firstDigit(line))
-	println("last digit: ", lastDigit(line))
-	println("first named digit: ", firstNamedDigit(line))
-	println("last named digit: ", lastNamedDigit(line))
+	upper = firstLiteralOrNamedDigit(line)
+	lower = lastLiteralOrNamedDigit(line)
 
-	upper = firstDigit(line) ?? firstNamedDigit(line)
-	lower = lastDigit(line) ?? lastNamedDigit(line)
 	sum += 10 * upper + lower
 }
 
