@@ -75,7 +75,7 @@ function namedDigitAt = (string line, number index) {
 	return null
 }
 
-string input = fileRead("example2.txt")
+string input = fileRead("input2.txt")
 list lines = split(input, "\n")
 number len = length(input)
 
