@@ -61,9 +61,9 @@ foreach (number lineIdx: string line in lines) {
 	number start
 	number partNumber
 	while (idx < length(line)) {
-		if (contains(digits, line[idx])) {
+		if (isDigit(line[idx])) {
 			start = idx
-			while (idx < length(line) && contains(digits, line[idx])) {
+			while (idx < length(line) && isDigit(line[idx])) {
 				idx++
 			}
 
@@ -71,11 +71,13 @@ foreach (number lineIdx: string line in lines) {
 			if (isAdjacentToSymbol(lines, lineIdx, start, idx - 1)) {
 				doAdd(partNumbers, partNumber)
 			}
+		} else {
+			idx++
 		}
-
-		idx++
 	}
 }
+
+println(partNumbers)
 
 number sum = 0
 foreach (number partNumber in partNumbers) {
