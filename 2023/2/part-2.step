@@ -1,0 +1,73 @@
+string? input = fileRead("input.txt")
+if (input == null) {
+	println("File not found")
+	return
+}
+
+map games
+foreach (string line in split(input, "\n")) {
+	// split off "Game x: "
+	list data = split(line, ": ")
+	string gameName = data[0]
+	string gameContent = data[1]
+
+	list drawContent = split(gameContent, "; ")
+	list draws = []
+	foreach (string draw in drawContent) {
+		map drawNumbers = {"blue": 0, "green": 0, "red": 0}
+
+		list amounts = split(draw, ", ")
+		foreach (string amount in amounts) {
+			// always has the form "x color"
+			list parts = split(amount, " ")
+			string countStr = parts[0]
+			number count = toNumber(countStr)
+
+			string color = parts[1]
+
+			drawNumbers[color] = count
+		}
+
+		doAdd(draws, drawNumbers)
+	}
+
+	games[gameName] = draws
+}
+
+function isGamePossible = (list draws, number blue, number green, number red) {
+	number blueCount = 0
+	number greenCount = 0
+	number redCount = 0
+
+	foreach (map draw in draws) {
+		blueCount = draw["blue"]
+		greenCount = draw["green"]
+		redCount = draw["red"]
+
+		if (blueCount > blue || greenCount > green || redCount > red) {
+			return false
+		}
+	}
+
+	return true
+}
+
+function minimumCubesNeeded = (list draws) {
+	map counts = {"blue": 0, "green": 0, "red": 0}
+
+	foreach (map draw in draws) {
+		counts["blue"] = max(draw["blue"], counts["blue"])
+		counts["green"] = max(draw["green"], counts["green"])
+		counts["red"] = max(draw["red"], counts["red"])
+	}
+
+	return counts
+}
+
+number minimumPowersSum = 0
+foreach (string gameName: list draws in games) {
+	map minimumCubes = minimumCubesNeeded(draws)
+	minimumPowersSum += minimumCubes["blue"] * minimumCubes["green"] * minimumCubes["red"]
+}
+
+println(minimumPowersSum)
