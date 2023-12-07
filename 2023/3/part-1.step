@@ -1,0 +1,85 @@
+string? input = fileRead("input.txt")
+if (input == null) {
+	println("File not found")
+	return
+}
+
+list digits = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+function isDigit = (string char) {
+	return contains(digits, char)
+}
+
+// everything not a digit or a . is considered a symbol
+function isSymbol = (string char) {
+	if (length(char) != 1) {
+		return false
+	}
+
+	if (isDigit(char)) {
+		return false
+	}
+
+	if (char == ".") {
+		return false
+	}
+
+	return true
+}
+
+// looks at all places around the given line and indices to see if there is a symbol
+function isAdjacentToSymbol = (list lines, number lineIdx, number startIdx, number endIdx) {
+	list consideredLines = []
+	if (lineIdx > 0) {
+		doAdd(consideredLines, lines[lineIdx - 1])
+	}
+
+	doAdd(consideredLines, lines[lineIdx])
+
+	if (lineIdx < length(lines) - 1) {
+		doAdd(consideredLines, lines[lineIdx + 1])
+	}
+
+	foreach (string consideredLine in consideredLines) {
+		number idx = max(0, startIdx - 1)
+		while (idx <= endIdx + 1 && idx < length(consideredLine)) {
+			if (isSymbol(consideredLine[idx])) {
+				return true
+			}
+
+			idx++
+		}
+	}
+
+	return false
+}
+
+list partNumbers = []
+
+list lines = split(input, "\n")
+foreach (number lineIdx: string line in lines) {
+	number idx = 0
+	number start
+	number partNumber
+	while (idx < length(line)) {
+		if (contains(digits, line[idx])) {
+			start = idx
+			while (idx < length(line) && contains(digits, line[idx])) {
+				idx++
+			}
+
+			partNumber = toNumber(substring(line, start, idx - start))
+			if (isAdjacentToSymbol(lines, lineIdx, start, idx - 1)) {
+				doAdd(partNumbers, partNumber)
+			}
+		}
+
+		idx++
+	}
+}
+
+number sum = 0
+foreach (number partNumber in partNumbers) {
+	sum += partNumber
+}
+
+println(sum)
