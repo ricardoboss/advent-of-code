@@ -1,0 +1,89 @@
+import "../common.step"
+
+// look for * in the given line and return the index of the first one after the given index or -1 if none is found
+function findNextGearIndex = (string line, number index) {
+	number nextGearIndex = index + 1
+
+	while (nextGearIndex < length(line) && line[nextGearIndex] != "*") {
+		nextGearIndex = nextGearIndex + 1
+	}
+
+	if (nextGearIndex == length(line)) {
+		return -1
+	}
+
+	return nextGearIndex
+}
+
+// look before and after the given index for numbers and return an array containing start index and length of the number
+function findNumberAt = (string line, number charIndex) {
+	number minIndex = charIndex
+	while (minIndex >= 0 && isDigit(line[minIndex])) {
+		minIndex--
+	}
+
+	number maxIndex = charIndex
+	while (maxIndex < length(line) && isDigit(line[maxIndex])) {
+		maxIndex++
+	}
+
+	return [minIndex + 1, maxIndex - minIndex - 1]
+}
+
+// look for all 8 places around the given line and char indices for numbers and parse them
+function findAdjacentNumbers = (list lines, number lineIndex, number charIndex) {
+	list adjacentNumbers = []
+
+	number i = max(0, lineIndex - 1)
+	number iMax = min(length(lines) - 1, lineIndex + 1)
+
+	while (i <= iMax) {
+		string line = lines[i]
+		number j = max(0, charIndex - 1)
+		number jMax = min(length(line) - 1, charIndex + 1)
+		while (j <= jMax) {
+			if (isDigit(line[j])) {
+				list adjacentNumberPosition = findNumberAt(line, j)
+				number adjacentNumber = toNumber(substring(line, adjacentNumberPosition[0], adjacentNumberPosition[1]))
+
+				doAdd(adjacentNumbers, adjacentNumber)
+
+				j = adjacentNumberPosition[0] + adjacentNumberPosition[1] + 1
+
+				continue
+			}
+
+			j++
+		}
+
+		i++
+	}
+
+	return adjacentNumbers
+}
+
+list inputLines = readInputLines("3/input.txt")
+number gearSum = 0
+foreach (number lineIdx: string line in inputLines) {
+	number gearIndex = findNextGearIndex(line, 0)
+	list adjacentNumbers
+	while (gearIndex >= 0) {
+		adjacentNumbers = findAdjacentNumbers(inputLines, lineIdx, gearIndex)
+
+		if (length(adjacentNumbers) != 2) {
+			println("Gear at line ", lineIdx, " and char ", gearIndex, " doesn't have exactly 2 adjacent numbers: ", adjacentNumbers)
+
+			gearIndex = findNextGearIndex(line, gearIndex)
+
+			continue
+		}
+
+		number gearRatio = adjacentNumbers[0] * adjacentNumbers[1]
+
+		gearSum += gearRatio
+
+		gearIndex = findNextGearIndex(line, gearIndex)
+	}
+}
+
+println(gearSum)
