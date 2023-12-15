@@ -1,0 +1,59 @@
+import "../common.step"
+
+function parseNumbers = (string part) {
+	list nums = []
+
+	foreach (string s1 in split(part, "  ")) {
+		foreach (string s2 in split(s1, " ")) {
+			if (s2 != "") {
+				doAdd(nums, toNumber(s2))
+			}
+		}
+	}
+
+	return nums
+}
+
+function parseCard = (string line) {
+	map card = {"name": "", "number": 0, "luckyNumbers": [], "ownNumbers": []}
+
+	list nameContent = split(line, ": ")
+	card["name"] = nameContent[0]
+	list nameNumber = split(nameContent[0], " ")
+	card["number"] = toNumber(nameNumber[1])
+
+	list numberParts = split(nameContent[1], " | ")
+	card["luckyNumbers"] = parseNumbers(numberParts[0])
+	card["ownNumbers"] = parseNumbers(numberParts[1])
+
+	return card
+}
+
+function getNumCopies = (map card) {
+	list luckyNumbers = card["luckyNumbers"]
+	list ownNumbers = card["ownNumbers"]
+
+	number copiesWon = 0
+	foreach (number ownNumber in ownNumbers) {
+		if (contains(luckyNumbers, ownNumber)) {
+			copiesWon += 1
+		}
+	}
+
+	return copiesWon
+}
+
+list cards = []
+list inputLines = readInputLines("4/example.txt")
+foreach (string line in inputLines) {
+	doAdd(cards, parseCard(line))
+}
+
+list copies = []
+foreach (map card in cards) {
+	number copiesWon = getNumCopies(card)
+
+	println("Card ", card["number"], " won ", copiesWon, " copies")
+
+	// todo iterate over the copied cards as many times as there are copies of it
+}
