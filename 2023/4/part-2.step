@@ -15,7 +15,7 @@ function parseNumbers = (string part) {
 }
 
 function parseCard = (string line) {
-	map card = {"name": "", "number": 0, "luckyNumbers": [], "ownNumbers": []}
+	map card = {"name": "", "number": 0, "luckyNumbers": [], "ownNumbers": [], "count": 1}
 
 	list nameContent = split(line, ": ")
 	card["name"] = nameContent[0]
@@ -43,17 +43,61 @@ function getNumCopies = (map card) {
 	return copiesWon
 }
 
-list cards = []
-list inputLines = readInputLines("4/example.txt")
+function processCopies = (list stack, list originalCards) {
+	list copies = []
+
+	foreach (map card in stack) {
+		number copiesWon = getNumCopies(card)
+
+		if (copiesWon > 0) {
+			number startIdx = indexOf(originalCards, card) + 1
+			number endIdx = startIdx + copiesWon - 1
+
+			//println("Card ", card["number"], " won; adding ", copiesWon, " cards (", originalCards[startIdx]["number"], " to ", originalCards[endIdx]["number"], ")")
+
+			number cardIdx = startIdx
+			while (cardIdx <= endIdx) {
+				map copy = originalCards[cardIdx]
+				copy["count"] = copy["count"] + 1
+				doAdd(copies, copy)
+				cardIdx += 1
+			}
+		}
+	}
+
+	//println("Processed ", length(stack), " cards; ", length(copies), " copies won")
+
+	return copies
+}
+
+function printCounts = (bool a = true) { // fixme: can't have empty function signature??
+	println(converted(originalCards, (map c) { return [c["name"],c["count"]] }))
+}
+
+list originalCards = []
+list inputLines = readInputLines("4/input.txt")
 foreach (string line in inputLines) {
-	doAdd(cards, parseCard(line))
+	doAdd(originalCards, parseCard(line))
 }
 
-list copies = []
-foreach (map card in cards) {
-	number copiesWon = getNumCopies(card)
+bool noMoreCopies = false
+number totalCopies = 0
+list stack = originalCards
+while (!noMoreCopies) {
+	list previousStack = stack
+	list copies = processCopies(stack, originalCards)
+	//println(converted(previousStack, (map c) { return c["number"] }), " -> ", converted(copies, (map c) { return c["number"] }))
+	noMoreCopies = length(copies) == 0
+	totalCopies += length(copies)
 
-	println("Card ", card["number"], " won ", copiesWon, " copies")
-
-	// todo iterate over the copied cards as many times as there are copies of it
+	stack = copies
 }
+
+printCounts()
+
+number sumCounts = 0
+foreach (map card in originalCards) {
+	sumCounts += card["count"]
+}
+
+println("Sum of counts: ", sumCounts)
