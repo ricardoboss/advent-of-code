@@ -1,0 +1,61 @@
+import "../common.step"
+
+function parseNumbers = (string part) {
+	list nums = []
+
+	foreach (string s1 in split(part, "  ")) {
+		foreach (string s2 in split(s1, " ")) {
+			if (s2 != "") {
+				doAdd(nums, toNumber(s2))
+			}
+		}
+	}
+
+	return nums
+}
+
+function parseCard = (string line) {
+	map card = {"name": "", "luckyNumbers": [], "ownNumbers": []}
+
+	list nameContent = split(line, ": ")
+	card["name"] = nameContent[0]
+
+	list numberParts = split(nameContent[1], " | ")
+	card["luckyNumbers"] = parseNumbers(numberParts[0])
+	card["ownNumbers"] = parseNumbers(numberParts[1])
+
+	return card
+}
+
+function getPoints = (map card) {
+	list luckyNumbers = card["luckyNumbers"]
+	list ownNumbers = card["ownNumbers"]
+
+	number points = 0
+	foreach (number ownNumber in ownNumbers) {
+		if (contains(luckyNumbers, ownNumber)) {
+			if (points == 0) {
+				points = 1
+			} else {
+				points *= 2
+			}
+		}
+	}
+
+	return points
+}
+
+list cards = []
+list inputLines = readInputLines("4/input.txt")
+foreach (string line in inputLines) {
+	doAdd(cards, parseCard(line))
+}
+
+number totalPoints = 0
+foreach (map card in cards) {
+	number cardPoints = getPoints(card)
+	println(card["name"], " has lucky numbers: ", card["luckyNumbers"], ", and you have: ", card["ownNumbers"], ", so you get ", cardPoints, " points")
+	totalPoints += cardPoints
+}
+
+println("Total points: ", totalPoints)
