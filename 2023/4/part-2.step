@@ -15,12 +15,10 @@ function parseNumbers = (string part) {
 }
 
 function parseCard = (string line) {
-	map card = {"name": "", "number": 0, "luckyNumbers": [], "ownNumbers": [], "count": 1}
+	map card = {"name": "", "luckyNumbers": [], "ownNumbers": [], "count": 1}
 
 	list nameContent = split(line, ": ")
 	card["name"] = nameContent[0]
-	list nameNumber = split(nameContent[0], " ")
-	card["number"] = toNumber(nameNumber[1])
 
 	list numberParts = split(nameContent[1], " | ")
 	card["luckyNumbers"] = parseNumbers(numberParts[0])
@@ -30,6 +28,10 @@ function parseCard = (string line) {
 }
 
 function getNumCopies = (map card) {
+	if (containsKey(card, "copiesWon")) {
+		return card["copiesWon"]
+	}
+
 	list luckyNumbers = card["luckyNumbers"]
 	list ownNumbers = card["ownNumbers"]
 
@@ -39,6 +41,8 @@ function getNumCopies = (map card) {
 			copiesWon += 1
 		}
 	}
+
+	card["copiesWon"] = copiesWon
 
 	return copiesWon
 }
@@ -53,19 +57,19 @@ function processCopies = (list stack, list originalCards) {
 			number startIdx = indexOf(originalCards, card) + 1
 			number endIdx = startIdx + copiesWon - 1
 
-			//println("Card ", card["number"], " won; adding ", copiesWon, " cards (", originalCards[startIdx]["number"], " to ", originalCards[endIdx]["number"], ")")
+//			println(card["name"], " won; adding ", copiesWon, " cards (", originalCards[startIdx]["name"], " to ", originalCards[endIdx]["name"], ")")
 
 			number cardIdx = startIdx
 			while (cardIdx <= endIdx) {
 				map copy = originalCards[cardIdx]
-				copy["count"] = copy["count"] + 1
+				copy["count"] = copy["count"] + 1 // fixme: index access doesn't allow increment
 				doAdd(copies, copy)
 				cardIdx += 1
 			}
 		}
 	}
 
-	//println("Processed ", length(stack), " cards; ", length(copies), " copies won")
+	println("Processed ", length(stack), " cards; ", length(copies), " copies won")
 
 	return copies
 }
@@ -74,30 +78,30 @@ function printCounts = (bool a = true) { // fixme: can't have empty function sig
 	println(converted(originalCards, (map c) { return [c["name"],c["count"]] }))
 }
 
+function calculateSumCounts = (bool a = true) {
+	number sumCounts = 0
+	foreach (map card in originalCards) {
+		sumCounts += card["count"]
+	}
+	return sumCounts
+}
+
 list originalCards = []
+println("processing input")
 list inputLines = readInputLines("4/input.txt")
 foreach (string line in inputLines) {
 	doAdd(originalCards, parseCard(line))
 }
 
-bool noMoreCopies = false
-number totalCopies = 0
+println(originalCards)
+
 list stack = originalCards
-while (!noMoreCopies) {
-	list previousStack = stack
+while (length(stack) > 0) {
 	list copies = processCopies(stack, originalCards)
-	//println(converted(previousStack, (map c) { return c["number"] }), " -> ", converted(copies, (map c) { return c["number"] }))
-	noMoreCopies = length(copies) == 0
-	totalCopies += length(copies)
 
 	stack = copies
 }
 
 printCounts()
 
-number sumCounts = 0
-foreach (map card in originalCards) {
-	sumCounts += card["count"]
-}
-
-println("Sum of counts: ", sumCounts)
+println("Sum of counts: ", calculateSumCounts())
