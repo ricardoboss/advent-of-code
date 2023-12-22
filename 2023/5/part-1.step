@@ -1,0 +1,66 @@
+import "../common.step"
+
+list seeds = []
+list maps = []
+
+function parseNumbers = (string line) {
+	list numbers = split(line, " ")
+	return converted(numbers, (string n) {
+		return toNumber(n)
+	})
+}
+
+function parseSeeds = (string line) {
+	list parts = split(line, ": ")
+	return parseNumbers(parts[1])
+}
+
+function parseMap = (list lines, number index) {
+	map parsedMap = {"name": "", "entries": []}
+
+	number maxLines = length(lines)
+
+	parsedMap["name"] = split(lines[index], " ")[0]
+
+	index++
+
+	while (index < maxLines) {
+		string line = lines[index]
+		if (length(line) == 0) {
+			break
+			println("no break")
+		}
+
+		println("Parsing line: ", line, " (length: ", length(line), ")")
+		list numbers = parseNumbers(line)
+		println(numbers)
+		map entry = {"destStart": numbers[0], "sourceStart": numbers[1], "length": numbers[2]}
+
+		doAdd(parsedMap["entries"], entry)
+
+		index++
+	}
+
+	return parsedMap
+}
+
+function parseMaps = (list lines, number index) {
+	list maps = []
+	number maxLines = length(lines)
+
+	while (index < maxLines) {
+		map parsedMap = parseMap(lines, index)
+		doAdd(maps, parsedMap)
+
+		index += length(parsedMap["entries"]) + 2
+	}
+
+	return maps
+}
+
+list inputLines = readInputLines("5/example.txt")
+list seeds = parseSeeds(inputLines[0])
+list maps = parseMaps(inputLines, 2)
+
+print("Seeds: ", toJson(seeds))
+print("Maps: ", toJson(maps))
